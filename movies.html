@@ -1,0 +1,163 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Movies · Sanjay</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,500;1,400;1,500&family=Inter:wght@300;400;500&family=JetBrains+Mono:wght@300;400&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="assets/style.css">
+</head>
+<body>
+
+<div class="filmstrip">
+  <div class="hole"></div><div class="hole"></div><div class="hole"></div>
+  <div class="hole"></div><div class="hole"></div><div class="hole"></div>
+  <div class="hole"></div><div class="hole"></div><div class="hole"></div>
+  <div class="hole"></div><div class="hole"></div><div class="hole"></div>
+  <div class="hole"></div><div class="hole"></div><div class="hole"></div>
+</div>
+
+<nav>
+  <a href="index.html" class="brand">Sanjay<span>.</span></a>
+  <ul>
+    <li><a href="index.html" class="navlink">Home</a></li>
+    <li><a href="about.html" class="navlink">About</a></li>
+    <li><a href="movies.html" class="navlink">Movies</a></li>
+    <li><a href="anime.html" class="navlink">Anime</a></li>
+    <li><a href="connect.html" class="navlink">Connect</a></li>
+    <li class="nav-tools">
+      <button class="tool-btn" id="toggle-scanlines" title="Toggle scanlines">▤</button>
+      <button class="tool-btn" id="toggle-sound" title="Toggle sound">♪</button>
+    </li>
+  </ul>
+</nav>
+
+<main>
+  <div class="container">
+
+    <section class="hero" style="min-height: 52vh;">
+      <div class="eyebrow">The Screen</div>
+      <h1>Films that <em>stayed.</em></h1>
+      <div class="sub">
+        <span>Not a ranking</span> <b>·</b>
+        <span>Not a review</span> <b>·</b>
+        <span>Just the films that became part of me</span>
+      </div>
+    </section>
+
+    <section class="bordered">
+      <div class="section-label">The Tiers</div>
+      <div id="tiers-container"></div>
+    </section>
+
+    <section class="bordered reveal">
+      <div class="section-label">Recently Watched</div>
+      <h2>What I've <em>seen lately.</em></h2>
+      <div class="poster-grid" id="recent-grid"></div>
+    </section>
+
+    <section class="bordered reveal">
+      <div class="section-label">Watchlist</div>
+      <h2>What's <em>waiting.</em></h2>
+      <p style="max-width: 560px;">Films on the shelf. Not yet seen — but the moment will come.</p>
+      <div class="tag-row" id="watchlist-container"></div>
+    </section>
+
+    <section class="reveal quote-block">
+      <p>Cinema is a matter of what's in the frame <em>and what's out of it.</em></p>
+      <div class="attribution">Martin Scorsese</div>
+    </section>
+
+  </div>
+</main>
+
+<div class="modal-overlay" id="modal-overlay">
+  <div class="modal">
+    <button class="close" aria-label="Close">&times;</button>
+    <h3></h3>
+    <div class="modal-meta"></div>
+    <div class="stars"></div>
+    <div class="review"></div>
+  </div>
+</div>
+
+<footer>
+  <div>Sanjay · The Screen</div>
+  <div class="end-mark">fin.</div>
+  <div><a href="connect.html">Connect →</a></div>
+</footer>
+
+<script src="assets/movies-data.js"></script>
+<script src="assets/effects.js"></script>
+<script src="assets/script.js"></script>
+<script>
+document.addEventListener('DOMContentLoaded', () => {
+  const tiersEl = document.getElementById('tiers-container');
+  const tierKeys = ['immortals', 'worksOfArt', 'stayedWithMe', 'goodTime', 'didntConnect'];
+
+  tierKeys.forEach(key => {
+    const tier = MOVIES[key];
+    const div = document.createElement('div');
+    div.className = 'tier reveal';
+    const num = tier.label.split('·')[0].trim();
+    const name = tier.label.split('·')[1].trim();
+
+    let html = `<div class="tier-head">
+      <div class="tier-num">${num}</div>
+      <div>
+        <div class="tier-name">${name}</div>
+        <div class="tier-sub">${tier.sub}</div>
+      </div>
+    </div><div class="poster-grid">`;
+
+    tier.films.forEach(f => {
+      const starsStr = window.starStr(f.r);
+      const data = JSON.stringify({ title: f.t, year: f.y, director: f.d, stars: starsStr, note: f.note });
+      html += `<div class="poster" data-modal='${data.replace(/'/g, "&#39;")}'>
+        <div class="plate">
+          <div class="title">${f.t}</div>
+          <div class="year">${f.y}</div>
+          <div class="rating">${starsStr}</div>
+        </div>
+        <div class="meta">${f.d || ''}</div>
+      </div>`;
+    });
+
+    html += '</div>';
+    div.innerHTML = html;
+    tiersEl.appendChild(div);
+  });
+
+  // Recently
+  const recentGrid = document.getElementById('recent-grid');
+  RECENTLY.forEach(f => {
+    const starsStr = window.starStr(f.r);
+    const data = JSON.stringify({ title: f.t, year: f.y, director: f.d, stars: starsStr, note: f.note });
+    recentGrid.innerHTML += `<div class="poster" data-modal='${data.replace(/'/g, "&#39;")}'>
+      <div class="plate">
+        <div class="title">${f.t}</div>
+        <div class="year">${f.y}</div>
+        <div class="rating">${starsStr}</div>
+      </div>
+      <div class="meta">${f.d || ''}</div>
+    </div>`;
+  });
+
+  // Watchlist
+  const wl = document.getElementById('watchlist-container');
+  WATCHLIST.forEach(f => {
+    const span = document.createElement('span');
+    span.className = 'tag';
+    span.textContent = f;
+    wl.appendChild(span);
+  });
+
+  // Re-attach reveal & hover
+  if (window.attachReveal) window.attachReveal();
+  if (window.attachHover) window.attachHover();
+});
+</script>
+</body>
+</html>

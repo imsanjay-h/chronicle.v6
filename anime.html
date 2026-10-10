@@ -1,0 +1,206 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Anime · Sanjay</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,500;1,400;1,500&family=Inter:wght@300;400;500&family=JetBrains+Mono:wght@300;400&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="assets/style.css">
+</head>
+<body>
+
+<div class="filmstrip">
+  <div class="hole"></div><div class="hole"></div><div class="hole"></div>
+  <div class="hole"></div><div class="hole"></div><div class="hole"></div>
+  <div class="hole"></div><div class="hole"></div><div class="hole"></div>
+  <div class="hole"></div><div class="hole"></div><div class="hole"></div>
+  <div class="hole"></div><div class="hole"></div><div class="hole"></div>
+</div>
+
+<nav>
+  <a href="index.html" class="brand">Sanjay<span>.</span></a>
+  <ul>
+    <li><a href="index.html" class="navlink">Home</a></li>
+    <li><a href="about.html" class="navlink">About</a></li>
+    <li><a href="movies.html" class="navlink">Movies</a></li>
+    <li><a href="anime.html" class="navlink">Anime</a></li>
+    <li><a href="connect.html" class="navlink">Connect</a></li>
+    <li class="nav-tools">
+      <button class="tool-btn" id="toggle-scanlines" title="Toggle scanlines">▤</button>
+      <button class="tool-btn" id="toggle-sound" title="Toggle sound">♪</button>
+    </li>
+  </ul>
+</nav>
+
+<main>
+  <div class="container">
+
+    <section class="hero" style="min-height: 52vh;">
+      <div class="eyebrow">The Long Night</div>
+      <h1>Worlds I've <em>lived in.</em></h1>
+      <div class="sub">
+        <span>30 anime</span> <b>·</b>
+        <span>Mean score 96.46</span> <b>·</b>
+        <span>Still adding</span>
+      </div>
+    </section>
+
+    <section class="bordered reveal">
+      <div class="section-label">S-Tier</div>
+      <h2>The ones that <em>changed me.</em></h2>
+      <div class="poster-grid" id="s-tier-grid"></div>
+    </section>
+
+    <section class="bordered reveal">
+      <div class="section-label">Currently Watching</div>
+      <h2>Playing <em>right now.</em></h2>
+      <div id="watching-container"></div>
+    </section>
+
+    <section class="bordered reveal">
+      <div class="section-label">Completed</div>
+      <h2>What I've <em>finished.</em></h2>
+      <div class="poster-grid" id="completed-grid"></div>
+    </section>
+
+    <section class="bordered reveal">
+      <div class="section-label">Plan to Watch</div>
+      <h2>The <em>endless list.</em></h2>
+      <div class="tag-row" id="ptw-container"></div>
+    </section>
+
+    <section class="bordered reveal">
+      <div class="section-label">Manga</div>
+      <h2>What I'm <em>reading.</em></h2>
+      <div class="poster-grid" id="manga-container"></div>
+    </section>
+
+    <section class="reveal quote-block">
+      <p>Whatever you lose, you'll find it again. <em>But what you throw away you'll never get back.</em></p>
+      <div class="attribution">Kenshin Himura</div>
+    </section>
+
+  </div>
+</main>
+
+<div class="modal-overlay" id="modal-overlay">
+  <div class="modal">
+    <button class="close" aria-label="Close">&times;</button>
+    <h3></h3>
+    <div class="modal-meta"></div>
+    <div class="stars"></div>
+    <div class="review"></div>
+  </div>
+</div>
+
+<footer>
+  <div>Sanjay · The Long Night</div>
+  <div class="end-mark">fin.</div>
+  <div><a href="connect.html">Connect →</a></div>
+</footer>
+
+<script src="assets/anime-data.js"></script>
+<script src="assets/effects.js"></script>
+<script src="assets/script.js"></script>
+<script>
+document.addEventListener('DOMContentLoaded', () => {
+
+  const scoreToStars = (r) => {
+    if (!r) return '';
+    const s = r / 20;
+    const full = Math.floor(s);
+    const half = s % 1 >= 0.5;
+    return '★'.repeat(full) + (half ? '½' : '');
+  };
+
+  // S-Tier
+  const st = document.getElementById('s-tier-grid');
+  ANIME.sTier.anime.forEach(a => {
+    const score = a.r ? (a.r / 20).toFixed(1) : '';
+    const starsStr = scoreToStars(a.r);
+    const data = JSON.stringify({ title: a.t, year: a.e + ' episodes', stars: starsStr, note: a.note });
+    st.innerHTML += `<div class="poster" data-modal='${data.replace(/'/g, "&#39;")}'>
+      <div class="plate">
+        <div class="title">${a.t}</div>
+        <div class="year">${a.e} eps</div>
+        ${score ? `<div class="rating">${score}</div>` : ''}
+      </div>
+      <div class="meta">${a.note ? a.note.slice(0, 32) : 'S-Tier'}</div>
+    </div>`;
+  });
+
+  // Currently Watching with progress
+  const watchContainer = document.getElementById('watching-container');
+  ANIME.currentlyWatching.forEach((a, i) => {
+    const max = a.total || (a.e * 4) || 100;
+    const pct = Math.min(100, (a.e / max) * 100);
+    const card = document.createElement('div');
+    card.className = 'progress-card reveal';
+    card.innerHTML = `
+      <div class="title-row">
+        <div class="title">${a.t}</div>
+        <div class="count">EP ${a.e} / ${max}</div>
+      </div>
+      <div class="progress-bar">
+        <div class="fill" style="width: 0%;" data-target="${pct}"></div>
+      </div>
+    `;
+    watchContainer.appendChild(card);
+  });
+
+  // Animate progress bars
+  setTimeout(() => {
+    document.querySelectorAll('.progress-bar .fill').forEach(f => {
+      f.style.width = f.dataset.target + '%';
+    });
+  }, 400);
+
+  // Completed
+  const comp = document.getElementById('completed-grid');
+  ANIME.completed.forEach(a => {
+    const score = a.r ? (a.r / 20).toFixed(1) : '';
+    const starsStr = scoreToStars(a.r);
+    const data = JSON.stringify({ title: a.t, year: a.e + ' episodes', stars: starsStr, note: '' });
+    comp.innerHTML += `<div class="poster" data-modal='${data.replace(/'/g, "&#39;")}'>
+      <div class="plate">
+        <div class="title">${a.t}</div>
+        <div class="year">${a.e} eps</div>
+        ${score ? `<div class="rating">${score}</div>` : ''}
+      </div>
+      <div class="meta">${a.r ? 'Rated ' + score : 'Not rated'}</div>
+    </div>`;
+  });
+
+  // PTW
+  const ptw = document.getElementById('ptw-container');
+  ANIME.planToWatch.forEach(a => {
+    const span = document.createElement('span');
+    span.className = 'tag';
+    span.textContent = a;
+    ptw.appendChild(span);
+  });
+
+  // Manga
+  const manga = document.getElementById('manga-container');
+  MANGA.forEach(m => {
+    const score = (m.r / 20).toFixed(1);
+    const starsStr = scoreToStars(m.r);
+    const data = JSON.stringify({ title: m.t, year: m.ch + ' chapters', stars: starsStr, note: '' });
+    manga.innerHTML += `<div class="poster" data-modal='${data.replace(/'/g, "&#39;")}'>
+      <div class="plate">
+        <div class="title">${m.t}</div>
+        <div class="year">${m.ch} ch</div>
+        <div class="rating">${score}</div>
+      </div>
+      <div class="meta">Manga · ${score}</div>
+    </div>`;
+  });
+
+  if (window.attachReveal) window.attachReveal();
+  if (window.attachHover) window.attachHover();
+});
+</script>
+</body>
+</html>
